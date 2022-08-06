@@ -1,0 +1,51 @@
+@import "./settings.scss";
+
+button {
+  font-size: 1.1rem;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 0px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.primary {
+    background-color: $orange;
+    border: solid 2px transparent;
+    color: $dark-orange;
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+      background-color: darken($orange, 10);
+      color: darken($dark-orange, 10);
+    }
+  }
+
+  &.big {
+    font-size: 1.5rem;
+  }
+
+  &.small {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+  }
+
+  &.dropdown {
+    background-color: $yellow;
+    border: solid 1px $dark-orange;
+    border-radius: 10px;
+    width: 100%;
+    transition: 0.3s;
+    transition-delay: 0.1s;
+    color: $black;
+
+    &.show-list {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+    }
+  }
+}
