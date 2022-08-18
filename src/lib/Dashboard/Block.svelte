@@ -106,7 +106,7 @@
           color="#24292e"
           height={20}
           width={20}
-          amount={Object.entries($contractsStore).find(
+          amount={Object.entries($contractsStore).filter(
             ([_, contract]) => contract.origination.level === block.level
           ).length}
         />
@@ -120,7 +120,12 @@
   </div>
   <div>
     <a href={`#/blocks/${block.hash}`}>
-      <button class="primary">Inspect</button>
+      <button
+        class="primary"
+        on:click={() => store.updateView("blocks", block.hash)}
+      >
+        Inspect
+      </button>
     </a>
   </div>
 </div>

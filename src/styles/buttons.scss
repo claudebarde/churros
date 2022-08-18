@@ -17,7 +17,7 @@ button {
     cursor: pointer;
     transition: 0.3s;
 
-    &:hover {
+    &:enabled:hover {
       background-color: darken($orange, 10);
       color: darken($dark-orange, 10);
     }
@@ -47,5 +47,20 @@ button {
       border-bottom-left-radius: 0px;
       border-bottom-right-radius: 0px;
     }
+  }
+
+  &.link {
+    text-decoration: underline;
+    background-color: transparent;
+    border: none;
+    color: $dark-orange;
+
+    &:hover {
+      font-style: italic;
+    }
+  }
+
+  &:disabled {
+    cursor: no-drop;
   }
 }

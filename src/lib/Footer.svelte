@@ -2,7 +2,7 @@
   @import "../styles//settings.scss";
 
   footer {
-    background-color: $bg-color;
+    background-color: $yellow;
     display: flex;
     justify-content: center;
     align-items: center;

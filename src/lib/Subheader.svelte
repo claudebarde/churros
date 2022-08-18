@@ -8,7 +8,7 @@
   @import "../styles//settings.scss";
 
   header {
-    background-color: $header-bg-color;
+    background-color: $black;
     color: white;
     display: flex;
     justify-content: space-between;

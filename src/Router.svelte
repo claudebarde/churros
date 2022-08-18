@@ -4,7 +4,8 @@
   import Accounts from "./lib/Accounts.svelte";
   import Blocks from "./lib/Blocks.svelte";
   import Transactions from "./lib/Transactions.svelte";
-  import Settings from "./lib/Settings.svelte";
+  import Contracts from "./lib/Contracts/Contracts.svelte";
+  import Settings from "./lib/Settings/Settings.svelte";
 </script>
 
 {#if $store.currentView === "dashboard"}
@@ -15,6 +16,8 @@
   <Blocks />
 {:else if $store.currentView === "transactions"}
   <Transactions />
+{:else if $store.currentView === "contracts"}
+  <Contracts />
 {:else if $store.currentView === "settings"}
   <Settings />
 {:else if $store.currentView === "notfound"}

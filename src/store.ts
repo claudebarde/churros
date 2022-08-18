@@ -1,18 +1,24 @@
 import { writable } from "svelte/store";
-import { State, Protocol, TransactionData } from "./types";
+import type { State, Protocol, TransactionData } from "./types";
 import type { TezosToolkit } from "@taquito/taquito";
 import type { BlockResponse } from "@taquito/rpc";
+import config from "./config";
 
 const initialState: State = {
   status: "unknown",
   Tezos: undefined,
   currentView: "dashboard",
+  viewParams: undefined,
   blockTime: 5,
   blocks: [],
   chainDetails: { chainId: undefined, protocolHash: undefined },
   currentLevel: undefined,
-  blockchainProtocol: Protocol.JAKARTA,
-  transactions: []
+  blockchainProtocol: config.defaultProtocol,
+  transactions: [],
+  toast: {
+    showToast: false,
+    toastText: ""
+  }
 };
 
 const store = writable(initialState);
@@ -23,8 +29,14 @@ const state = {
     store.update(store => ({ ...store, status: newStatus })),
   updateTezos: (tezos: TezosToolkit) =>
     store.update(store => ({ ...store, Tezos: tezos })),
-  updateView: (view: State["currentView"]) =>
-    store.update(store => ({ ...store, currentView: view })),
+  updateView: (view: State["currentView"], params?: any) =>
+    store.update(store => {
+      if (params) {
+        return { ...store, currentView: view, viewParams: params };
+      } else {
+        return { ...store, currentView: view, viewParams: undefined };
+      }
+    }),
   updateBlockTime: (blockTime: number) =>
     store.update(store => ({ ...store, blockTime })),
   addNewBlock: (block: BlockResponse) =>
@@ -92,7 +104,29 @@ const state = {
 
         return { ...store, transactions: [...transactions, ...newTxsStore] };
       }
-    })
+    }),
+  updateToast: ({
+    showToast,
+    toastText,
+    timeout = 4000
+  }: {
+    showToast: boolean;
+    toastText: string;
+    timeout?: number;
+  }) => {
+    store.update(store => {
+      if (showToast === true) {
+        setTimeout(
+          () => state.updateToast({ showToast: false, toastText: "" }),
+          timeout
+        );
+      }
+      return {
+        ...store,
+        toast: { showToast, toastText }
+      };
+    });
+  }
 };
 
 export default state;

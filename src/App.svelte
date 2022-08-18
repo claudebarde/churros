@@ -2,6 +2,7 @@
   import { onMount, afterUpdate } from "svelte";
   import { TezosToolkit } from "@taquito/taquito";
   import store from "./store";
+  import contractsStore from "./contractsStore";
   import Header from "./lib/Header.svelte";
   import Subheader from "./lib/Subheader.svelte";
   import Router from "./Router.svelte";
@@ -34,7 +35,7 @@
             protocolHash: undefined
           });
           store.updateCurrentLevel(undefined);
-          store.updateBlockchainProtocol(Protocol.HANGZHOU);
+          store.updateBlockchainProtocol(config.defaultProtocol);
           store.resetBlocks();
           // contractsStore.reset();
         } else if (data.update === "updateChainDetails") {
@@ -46,7 +47,7 @@
         }
       } else if (data.type === "contracts-update") {
         if (data.update === "addNewContract") {
-          // contractsStore[data.update](...data.payload);
+          contractsStore[data.update](...data.payload);
         }
       }
     };
@@ -68,25 +69,10 @@
       } else {
         // Flextesa is probably not launched
         store.updateStatus("off");
-        // sets an interval to check if Flextesa goes online
-        checkFlextesaInterval = setInterval(async () => {
-          const header = await Tezos.rpc.getBlockHeader();
-          if (header) {
-            // Blockchain is online
-            initWebWorker();
-          }
-        }, 2000);
       }
     } catch (error) {
       // Flextesa is probably not launched
       store.updateStatus("off");
-      checkFlextesaInterval = setInterval(async () => {
-        const header = await Tezos.rpc.getBlockHeader();
-        if (header) {
-          // Blockchain is online
-          initWebWorker();
-        }
-      }, 2000);
     }
   });
 
@@ -94,6 +80,7 @@
     // relistens to Flextesa coming online after shut off
     if (checkFlextesaInterval === undefined && $store.status === "off") {
       checkFlextesaInterval = setInterval(async () => {
+        console.log("flextesa interval");
         const header = await $store.Tezos.rpc.getBlockHeader();
         if (header) {
           // Blockchain is online

@@ -1,5 +1,4 @@
 import type { TezosToolkit } from "@taquito/taquito";
-import type { BlockResponse } from "@taquito/rpc";
 
 export interface Block {
   hash: string;
@@ -17,8 +16,10 @@ export type State = {
     | "accounts"
     | "blocks"
     | "transactions"
+    | "contracts"
     | "settings"
     | "notfound";
+  viewParams: any;
   blockTime: number;
   blocks: Array<Block>;
   chainDetails: {
@@ -28,6 +29,10 @@ export type State = {
   currentLevel: number;
   blockchainProtocol: Protocol;
   transactions: Array<TransactionData>;
+  toast: {
+    showToast: boolean;
+    toastText: string;
+  };
 };
 
 export enum Protocol {
