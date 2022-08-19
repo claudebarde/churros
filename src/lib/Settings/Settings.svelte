@@ -4,14 +4,14 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import config from "../../config";
   import store from "../../store";
+  import contractsStore from "../../contractsStore";
   import utils from "../../utils";
   import Dropdown from "../components/Dropdown.svelte";
-  import { Protocol, TezosContractAddress } from "../../types";
+  import { Protocol } from "../../types";
   import mockHarbingerCode from "./mockHarbingerCode";
 
   let box = config.defaultBox;
 
-  let startFlextesaCommand = "";
   let mockHarbingerValues = "XTZ-USD=5.67;BTC-USD=45000;ETH-USD=2876";
   let originatingOracle = false;
   let originatingNewContract = false;
@@ -53,6 +53,9 @@
         protocol: $store.blockchainProtocol
       });
       console.log(result);
+      // clean up
+      contractsStore.reset();
+
       setTimeout(() => (stoppingFlextesa = false), 2000);
     } catch (error) {
       console.error(error);
@@ -72,6 +75,7 @@
           console.log("Copied to clipboard successfully!");
           store.updateToast({
             showToast: true,
+            toastType: "success",
             toastText: "Command copied to clipboard"
           });
         },
@@ -110,6 +114,11 @@
           storage
         });
         await originateOp.confirmation();
+        store.updateToast({
+          showToast: true,
+          toastType: "success",
+          toastText: "Mock Harbinger successfully originated!"
+        });
       }
     } catch (error) {
       console.error(error);
@@ -131,6 +140,7 @@
     if (!isValidJson) {
       store.updateToast({
         showToast: true,
+        toastType: "error",
         toastText: "Invalid JSON provided for storage"
       });
       return;
@@ -197,6 +207,7 @@
         // displays new contract address
         store.updateToast({
           showToast: true,
+          toastType: "success",
           toastText: `New contract: <a href="#/contracts/${
             originationOp.contractAddress
           }">${utils.shortenHash(originationOp.contractAddress)}</a>`,
@@ -381,7 +392,11 @@
       <input type="text" style="width:70%" bind:value={mockHarbingerValues} />
     </div>
     <div>
-      <button class="primary" on:click={originateMockHarbinger}>
+      <button
+        class="primary"
+        on:click={originateMockHarbinger}
+        disabled={$store.status === "off"}
+      >
         {#if originatingOracle}
           Originating...
         {:else}

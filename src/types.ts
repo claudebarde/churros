@@ -32,6 +32,7 @@ export type State = {
   toast: {
     showToast: boolean;
     toastText: string;
+    toastType: "success" | "info" | "error";
   };
 };
 

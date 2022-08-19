@@ -17,6 +17,7 @@ const initialState: State = {
   transactions: [],
   toast: {
     showToast: false,
+    toastType: "info",
     toastText: ""
   }
 };
@@ -108,22 +109,29 @@ const state = {
   updateToast: ({
     showToast,
     toastText,
+    toastType,
     timeout = 4000
   }: {
     showToast: boolean;
     toastText: string;
+    toastType: "success" | "info" | "error";
     timeout?: number;
   }) => {
     store.update(store => {
       if (showToast === true) {
         setTimeout(
-          () => state.updateToast({ showToast: false, toastText: "" }),
+          () =>
+            state.updateToast({
+              showToast: false,
+              toastType: "info",
+              toastText: ""
+            }),
           timeout
         );
       }
       return {
         ...store,
-        toast: { showToast, toastText }
+        toast: { showToast, toastType, toastText }
       };
     });
   }

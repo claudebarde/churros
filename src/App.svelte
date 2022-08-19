@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, afterUpdate } from "svelte";
   import { TezosToolkit } from "@taquito/taquito";
+  import { InMemorySigner } from "@taquito/signer";
   import store from "./store";
   import contractsStore from "./contractsStore";
   import Header from "./lib/Header.svelte";
@@ -9,7 +10,7 @@
   import Footer from "./lib/Footer.svelte";
   import config from "./config";
   import WebWorker from "./web-worker?worker";
-  import { Protocol } from "./types";
+  import Toast from "./lib/components/Toast.svelte";
 
   let checkFlextesaInterval;
 
@@ -59,6 +60,9 @@
     const Tezos = new TezosToolkit(
       `${config.flextesaUrl}:${config.flextesaPort}`
     );
+    // sets up the signer
+    const signer = new InMemorySigner(config.accounts.alice.sk);
+    Tezos.setSignerProvider(signer);
     store.updateTezos(Tezos);
     // starts the web worker
     try {
@@ -91,6 +95,7 @@
   });
 </script>
 
+<Toast />
 <Header />
 <Subheader />
 <main>

@@ -67,6 +67,7 @@
       } else {
         store.updateToast({
           showToast: true,
+          toastType: "error",
           toastText: `Cannot find block ${utils.shortenHash($store.viewParams)}`
         });
       }
@@ -119,6 +120,7 @@
           class="primary"
           transition:fly|local={{ duration: 300, y: -300 }}
           on:click={async () => {
+            document.getElementById("block-details-container").scrollIntoView();
             selectedBlock = await $store.Tezos.rpc.getBlock({
               block: block.hash
             });
@@ -139,7 +141,10 @@
     </div>
   </div>
   <div class="block-details-container">
-    <div class="general-container data-display-details">
+    <div
+      id="block-details-container"
+      class="general-container data-display-details"
+    >
       {#if selectedBlock}
         <h3>Block {selectedBlock.hash}</h3>
         <div class="search-keys">
