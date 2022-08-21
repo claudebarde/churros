@@ -57,6 +57,32 @@
     }
   };
 
+  const parseOperations = (opsBlock: Array<any>, index: number) => {
+    if (Array.isArray(opsBlock) && opsBlock.length > 0) {
+      return `<div>
+          Block ${index + 1}
+        </div>
+        <div>
+          ${opsBlock
+            .map(ops =>
+              Object.entries(ops)
+                .map(
+                  ([key, prop]) =>
+                    `<div style="margin-top:10px">${key} = ${
+                      typeof prop === "string"
+                        ? prop
+                        : JSON.stringify(prop, null, 2)
+                    }</div>`
+                )
+                .join("")
+            )
+            .join("")}
+        </div>`;
+    } else {
+      return `<div>Block ${index + 1}</div><div>Empty</div>`;
+    }
+  };
+
   onMount(async () => {
     if ($store.blocks && $store.blocks.length > 0 && $store.viewParams) {
       const block = $store.blocks.find(
@@ -204,9 +230,14 @@
           </div>
           <h4>Operations</h4>
           <div class="data-display-details__info">
-            <pre>
+            <!-- <pre>
                 {JSON.stringify(selectedBlock.operations, null, 2)}
-            </pre>
+            </pre> -->
+            {#each selectedBlock.operations as opsBlock, index}
+              {@html parseOperations(opsBlock, index)}
+            {:else}
+              <div>No operation to show</div>
+            {/each}
           </div>
         </div>
       {:else}

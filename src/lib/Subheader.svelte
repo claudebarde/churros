@@ -2,6 +2,26 @@
   import store from "../store";
   import utils from "../utils";
   import config from "../config";
+  import { invoke } from "@tauri-apps/api/tauri";
+
+  let launchingFlextesa = false;
+
+  const launchFlextesa = async () => {
+    launchingFlextesa = true;
+    try {
+      const result = await invoke("launch_flextesa", {
+        blockTime: 5,
+        protocol: $store.blockchainProtocol,
+        flextesaPort: config.flextesaPort,
+        imageId: config.defaultImageId,
+        flextesaBox: config.defaultBox
+      });
+      setTimeout(() => (launchingFlextesa = false), 2000);
+    } catch (error) {
+      console.error(error);
+      launchingFlextesa = false;
+    }
+  };
 </script>
 
 <style lang="scss">
@@ -66,6 +86,17 @@
     <div>
       <div>RPC address</div>
       <div>{config.flextesaUrl}:{config.flextesaPort}</div>
+    </div>
+  {:else}
+    <div>
+      <button class="primary small" on:click={launchFlextesa}>
+        {#if launchingFlextesa}
+          Starting Flextesa...
+        {:else}
+          Start Flextesa
+        {/if}
+      </button>
+      <div>{config.defaultBox}</div>
     </div>
   {/if}
 </header>
