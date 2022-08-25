@@ -1,7 +1,23 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
   import { backInOut } from "svelte/easing";
+  import { validateContractAddress } from "@taquito/utils";
   import store from "../../store";
+
+  // Handles different click events on the toast
+  const clickToast = event => {
+    const link = event.target.href;
+    if (link) {
+      // determines if the link is to a contract address
+      const regex = /\/contracts\/(KT1[a-zA-Z0-9]{33})/;
+      const match = link.match(regex);
+      if (match && validateContractAddress(match[1]) === 3) {
+        store.updateView("contracts", match[1]);
+      }
+    } else {
+      console.log("not a link");
+    }
+  };
 </script>
 
 <style lang="scss">
@@ -28,6 +44,7 @@
   <div
     class="toast"
     transition:fly={{ duration: 1000, y: 300, opacity: 1, easing: backInOut }}
+    on:click={clickToast}
   >
     {#if $store.toast.toastType === "success"}
       <span class="material-symbols-outlined"> thumb_up </span>

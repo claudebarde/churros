@@ -16,6 +16,7 @@
   let selectedContractStorage: Array<{ name: string; value: any }> = [];
   let bigmapSearchResults = {};
   let entrypoints: Array<{ name: string }> = [];
+  let contractCallValues = {};
 
   const findAnnotationType = (schema: any, annot: string): string | null => {
     if (
@@ -62,6 +63,11 @@
     if (storage instanceof BigMapAbstraction) {
       // if storage is a single bigmap
       selectedContractStorage = [{ name: "bigmap", value: storage.toString() }];
+    } else if (BigNumber.isBigNumber(storage)) {
+      // if storage is a single number
+      selectedContractStorage = [
+        { name: "default", value: storage.toNumber() }
+      ];
     } else {
       Object.entries(storage).forEach(([name, value]) => {
         // bigmap
@@ -146,6 +152,35 @@
     }
   };
 
+  const makeContractCall = async (entrypointName: string) => {
+    try {
+      const contract = await $store.Tezos.contract.at(selectedContract);
+      const op = await contract.methods[entrypointName](
+        contractCallValues[entrypointName]
+      ).send();
+      store.updateToast({
+        showToast: true,
+        toastType: "info",
+        toastText: "Operation injected, waiting for confirmation..."
+      });
+      await op.confirmation();
+      loadContract(selectedContract);
+      store.updateToast({
+        showToast: true,
+        toastType: "success",
+        toastText: "Operation confirmed!"
+      });
+      contractCallValues = {};
+    } catch (error) {
+      console.error(error);
+      store.updateToast({
+        showToast: true,
+        toastType: "error",
+        toastText: "An error occurred, the operation couldn't be injected"
+      });
+    }
+  };
+
   onMount(async () => {
     if ($store.viewParams) {
       loadContract($store.viewParams);
@@ -182,7 +217,7 @@
         ? "height:90%"
         : "height:100%"}
     >
-      {#each Object.entries($contractsStore) as [contractAddress, data] (contractAddress)}
+      {#each Object.entries($contractsStore).reverse() as [contractAddress, data] (contractAddress)}
         <button
           class="primary"
           transition:fly|local={{ duration: 300, y: -300 }}
@@ -211,7 +246,26 @@
         <h4>- Entrypoints</h4>
         <div>
           {#each entrypoints as entrypoint}
-            <div>{entrypoint.name}</div>
+            <div>
+              <span class="material-symbols-outlined">
+                keyboard_arrow_right
+              </span>
+              <span>
+                {entrypoint.name}
+              </span>
+            </div>
+            <div class="input-with-button" style="margin-left: 20px">
+              <input
+                type="text"
+                placeholder="Contract call value"
+                bind:value={contractCallValues[entrypoint.name]}
+              />
+              <button
+                on:click={async () => await makeContractCall(entrypoint.name)}
+              >
+                Forge operation
+              </button>
+            </div>
           {/each}
         </div>
         <h4>- Storage</h4>

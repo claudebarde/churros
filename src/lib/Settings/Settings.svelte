@@ -239,10 +239,6 @@
       }
       */
   };
-
-  afterUpdate(async () => {
-    startFlextesaCommand = `docker run --rm --name ${$store.blockchainProtocol}-sandbox --detach -p 20000:20000 --env flextesa_node_cors_origin='*' --env block_time=${$store.blockTime} oxheadalpha/flextesa:${config.defaultImageId} ${box} start --genesis random`;
-  });
 </script>
 
 <style lang="scss">
