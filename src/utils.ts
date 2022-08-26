@@ -103,46 +103,42 @@ const json2html = (json: any): string => {
 };
 
 const findContractUpdates = async (
-  transactions: Array<TransactionData>,
+  blockHash: string,
   Tezos: TezosToolkit,
   availableContracts: Array<TezosContractAddress>
 ): Promise<Array<ContractUpdateData>> => {
-  return Promise.all(
-    transactions
-      .map(async tx => {
-        // loads the transaction data
-        const blockData = await Tezos.rpc.getBlock({ block: tx.block });
-        const txs = blockData.operations
-          .filter(opsArray => opsArray.length > 0)
-          .map(opsArray =>
-            opsArray
-              .filter(txsArray => txsArray.contents.length > 0)
-              .map(txsArray =>
-                txsArray.contents.filter(tx => tx.kind === "transaction")
-              )
-          )
-          .filter(el => el && el.length > 0)
-          .flat(Infinity)
-          .filter(tx => availableContracts.includes((tx as any).destination))
-          .map((tx: any) => ({
-            fee: +tx.fee,
-            gasLimit: +tx.gas_limit,
-            storageLimit: +tx.storage_limit,
-            storageSize: +tx.metadata.operation_result.storage_size,
-            address: tx.destination,
-            consumedMilligas: +tx.metadata.operation_result.consumed_milligas,
-            status: tx.metadata.operation_result.status,
-            parameters: {
-              entrypoint: tx.parameters.entrypoint,
-              value: tx.parameters.value
-            }
-          }));
-        console.log({ txs });
-
-        return undefined;
-      })
-      .filter(el => el)
-  );
+  const blockData = await Tezos.rpc.getBlock({ block: blockHash });
+  // loads the transaction data
+  return blockData.operations
+    .filter(opsArray => opsArray.length > 0)
+    .map(opsArray =>
+      opsArray
+        .filter(txsArray => txsArray.contents.length > 0)
+        .map(txsArray =>
+          txsArray.contents.filter(tx => tx.kind === "transaction")
+        )
+    )
+    .filter(el => el && el.length > 0)
+    .flat(Infinity)
+    .filter(tx => availableContracts.includes((tx as any).destination))
+    .map(
+      (tx: any) =>
+        ({
+          blockHash,
+          level: +blockData.header.level,
+          fee: +tx.fee,
+          gasLimit: +tx.gas_limit,
+          storageLimit: +tx.storage_limit,
+          storageSize: +tx.metadata.operation_result.storage_size,
+          address: tx.destination,
+          consumedMilligas: +tx.metadata.operation_result.consumed_milligas,
+          status: tx.metadata.operation_result.status,
+          parameters: {
+            entrypoint: tx.parameters.entrypoint,
+            value: tx.parameters.value
+          }
+        } as ContractUpdateData)
+    );
 };
 
 export default {

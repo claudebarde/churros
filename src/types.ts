@@ -70,6 +70,8 @@ export interface ContractSessionStorage {
 }
 
 export interface ContractUpdateData {
+  blockHash: string;
+  level: number;
   fee: number;
   gasLimit: number;
   storageLimit: number;

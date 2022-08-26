@@ -49,6 +49,8 @@
       } else if (data.type === "contracts-update") {
         if (data.update === "addNewContract") {
           contractsStore[data.update](...data.payload);
+        } else if (data.update === "addNewUpdate") {
+          contractsStore[data.update](data.payload);
         }
       }
     };

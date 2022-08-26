@@ -194,6 +194,14 @@
     padding: $v-padding 40px;
     height: calc(100% - #{$v-padding} * 2);
     overflow: auto;
+
+    .contract-updates-list {
+      li > p {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+      }
+    }
   }
 </style>
 
@@ -308,6 +316,31 @@
               </div>
             </div>
           {/each}
+        </div>
+        <h4>- Updates</h4>
+        <div>
+          <ol reversed class="contract-updates-list">
+            {#each $contractsStore[selectedContract].updates.reverse() as update, index}
+              <li>
+                <p>
+                  At level {update.level}
+                  <button
+                    class="primary small"
+                    on:click={() =>
+                      store.updateView("blocks", update.blockHash)}
+                  >
+                    Inspect block
+                  </button>
+                </p>
+                <p>
+                  Entrypoint called:
+                  <u>{update.parameters.entrypoint}</u>
+                </p>
+              </li>
+            {:else}
+              <li><p>(No update yet)</p></li>
+            {/each}
+          </ol>
         </div>
       {:else if Object.keys($contractsStore).length > 0}
         <div>Select a contract to display its data</div>

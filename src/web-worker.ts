@@ -150,16 +150,24 @@ ctx.onmessage = async ev => {
         // finds new transactions
         const newTransactions = utils.findNewTransactions(block);
         if (newTransactions.length > 0) {
-          await utils.findContractUpdates(
-            newTransactions,
-            Tezos,
-            availableContracts
-          );
           ctx.postMessage({
             type: "store-update",
             update: "addNewTransactions",
             payload: newTransactions
           });
+          // checks contract updates
+          const contractUpdates = await utils.findContractUpdates(
+            blockHash,
+            Tezos,
+            availableContracts
+          );
+          if (contractUpdates.length > 0) {
+            ctx.postMessage({
+              type: "contracts-update",
+              update: "addNewUpdate",
+              payload: contractUpdates
+            });
+          }
         }
       }
     });

@@ -1,10 +1,10 @@
 import { writable } from "svelte/store";
-import type { TezosContractAddress } from "./types";
+import type { TezosContractAddress, ContractUpdateData } from "./types";
 
 const initialState: {
   [p in TezosContractAddress]: {
     origination: { level: number; storage: any };
-    updates: Array<any>;
+    updates: Array<ContractUpdateData>;
   };
 } = {};
 const store = writable(initialState);
@@ -21,6 +21,17 @@ const state = {
 
       return newStore;
     }),
+  addNewUpdate: (updates: Array<ContractUpdateData>) => {
+    store.update(store => {
+      console.log({ updates });
+      updates.forEach(update => {
+        if (store.hasOwnProperty(update.address)) {
+          store[update.address].updates.push(update);
+        }
+      });
+      return store;
+    });
+  },
   reset: () => {
     store.update(_ => {
       //window.sessionStorage.removeItem(sessionStoreName);
