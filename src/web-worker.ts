@@ -1,10 +1,10 @@
 import { TezosToolkit, PollingSubscribeProvider } from "@taquito/taquito";
-import type { BlockResponse } from "@taquito/rpc";
-import { Protocol } from "./types";
+import { Protocol, TezosContractAddress } from "./types";
 import utils from "./utils";
 import config from "./config";
 
 const ctx: Worker = self as any;
+const availableContracts: Array<TezosContractAddress> = [];
 
 ctx.onmessage = async ev => {
   const msg = ev.data;
@@ -93,6 +93,12 @@ ctx.onmessage = async ev => {
             update: "updateBlockchainProtocol",
             payload: Protocol.GRANADA
           });
+        } else if (protocol.includes("kathmandu")) {
+          ctx.postMessage({
+            type: "store-update",
+            update: "updateBlockchainProtocol",
+            payload: Protocol.KATHMANDU
+          });
         }
         // calculates actual block time
         if (blocks.length > 0) {
@@ -133,15 +139,22 @@ ctx.onmessage = async ev => {
         // checks for contract origination
         const newOriginations = utils.checkForOriginationOps(block);
         if (newOriginations.length > 0) {
+          const address = newOriginations[0].address;
+          availableContracts.push(address);
           ctx.postMessage({
             type: "contracts-update",
             update: "addNewContract",
-            payload: [newOriginations[0].address, newOriginations[0].level]
+            payload: [address, newOriginations[0].level]
           });
         }
         // finds new transactions
         const newTransactions = utils.findNewTransactions(block);
         if (newTransactions.length > 0) {
+          await utils.findContractUpdates(
+            newTransactions,
+            Tezos,
+            availableContracts
+          );
           ctx.postMessage({
             type: "store-update",
             update: "addNewTransactions",

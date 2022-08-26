@@ -37,6 +37,7 @@ export type State = {
 };
 
 export enum Protocol {
+  KATHMANDU = "kathmandu",
   JAKARTA = "jakarta",
   HANGZHOU = "hangzhou",
   ITHACA = "ithaca",
@@ -49,7 +50,7 @@ export interface OriginationData {
   level: number;
 }
 
-export type TransactionData = { hash: string; level: number };
+export type TransactionData = { hash: string; level: number; block: string };
 
 export type TezosContractAddress = `KT1${string}`;
 export type TezosAccountAddress = `tz${"1" | "2" | "3"}${string}`;
@@ -65,5 +66,19 @@ export interface ContractSessionStorage {
       previousStorage: any;
       currentStorage: any;
     }>;
+  };
+}
+
+export interface ContractUpdateData {
+  fee: number;
+  gasLimit: number;
+  storageLimit: number;
+  storageSize: number;
+  address: TezosContractAddress;
+  consumedMilligas: number;
+  status: "applied" | "failed";
+  parameters: {
+    entrypoint: string;
+    value: any;
   };
 }

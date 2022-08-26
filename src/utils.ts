@@ -1,7 +1,14 @@
+import { get } from "svelte/store";
 import type { BlockResponse } from "@taquito/rpc";
-import { OpKind } from "@taquito/taquito";
+import { OpKind, type TezosToolkit } from "@taquito/taquito";
 import { validateAddress } from "@taquito/utils";
-import type { OriginationData, TransactionData } from "./types";
+import type {
+  OriginationData,
+  TransactionData,
+  ContractUpdateData,
+  TezosContractAddress
+} from "./types";
+import contractsStore from "./contractsStore";
 
 const objHasProperty = (obj: any, property: string): boolean => {
   return (
@@ -47,7 +54,11 @@ const checkForOriginationOps = (
 const findNewTransactions = (block: BlockResponse): Array<TransactionData> => {
   return block.operations
     .map(arrOp =>
-      arrOp.map(op => ({ hash: op.hash, level: block.header.level }))
+      arrOp.map(op => ({
+        hash: op.hash,
+        level: block.header.level,
+        block: block.hash
+      }))
     )
     .flat();
 };
@@ -91,6 +102,49 @@ const json2html = (json: any): string => {
   }
 };
 
+const findContractUpdates = async (
+  transactions: Array<TransactionData>,
+  Tezos: TezosToolkit,
+  availableContracts: Array<TezosContractAddress>
+): Promise<Array<ContractUpdateData>> => {
+  return Promise.all(
+    transactions
+      .map(async tx => {
+        // loads the transaction data
+        const blockData = await Tezos.rpc.getBlock({ block: tx.block });
+        const txs = blockData.operations
+          .filter(opsArray => opsArray.length > 0)
+          .map(opsArray =>
+            opsArray
+              .filter(txsArray => txsArray.contents.length > 0)
+              .map(txsArray =>
+                txsArray.contents.filter(tx => tx.kind === "transaction")
+              )
+          )
+          .filter(el => el && el.length > 0)
+          .flat(Infinity)
+          .filter(tx => availableContracts.includes((tx as any).destination))
+          .map((tx: any) => ({
+            fee: +tx.fee,
+            gasLimit: +tx.gas_limit,
+            storageLimit: +tx.storage_limit,
+            storageSize: +tx.metadata.operation_result.storage_size,
+            address: tx.destination,
+            consumedMilligas: +tx.metadata.operation_result.consumed_milligas,
+            status: tx.metadata.operation_result.status,
+            parameters: {
+              entrypoint: tx.parameters.entrypoint,
+              value: tx.parameters.value
+            }
+          }));
+        console.log({ txs });
+
+        return undefined;
+      })
+      .filter(el => el)
+  );
+};
+
 export default {
   objHasProperty,
   shortenHash,
@@ -98,5 +152,6 @@ export default {
   isNumber,
   checkForOriginationOps,
   findNewTransactions,
-  json2html
+  json2html,
+  findContractUpdates
 };
